@@ -117,8 +117,7 @@ def hemisphere(browser):
 
 def scrape_hemisphere(html_text):
 
-    html = html_text.html
-    hemi_soup = soup(html, 'html.parser')
+    hemi_soup = soup(html_text, 'html.parser')
 
     try:
         title_elem = hemi_soup.find("h2", class_="title").get_text()
