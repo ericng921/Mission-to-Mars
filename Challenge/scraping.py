@@ -12,7 +12,6 @@ def scrape_all():
     browser = Browser('chrome', **executable_path, headless=True)
 
     news_title, news_paragraph = mars_news(browser)
-    hemisphere_image_urls = hemisphere(browser)
 
     # Run all scraping functions and store results in a dictionary
     data = {
@@ -20,7 +19,7 @@ def scrape_all():
         "news_paragraph": news_paragraph,
         "featured_image": featured_image(browser),
         "facts": mars_facts(),
-        "hemisphere": hemisphere_image_urls,
+        "hemisphere": hemisphere(browser),
         "last_modified": dt.datetime.now(),
     }
 
@@ -33,7 +32,7 @@ def mars_news(browser):
 
     # Scrape Mars News
     # Visit the mars nasa news site
-    url = 'https://data-class-mars.s3.amazonaws.com/Mars/index.html'
+    url = 'https://redplanetscience.com/'
     browser.visit(url)
 
     # Optional delay for loading the page
@@ -59,7 +58,7 @@ def mars_news(browser):
 
 def featured_image(browser):
     # Visit URL
-    url = 'https://data-class-jpl-space.s3.amazonaws.com/JPL_Space/index.html'
+    url = 'https://spaceimages-mars.com/'
     browser.visit(url)
 
     # Find and click the full image button
@@ -79,7 +78,7 @@ def featured_image(browser):
         return None
 
     # Use the base url to create an absolute url
-    img_url = f'https://data-class-jpl-space.s3.amazonaws.com/JPL_Space/{img_url_rel}'
+    img_url = f'https://spaceimages-mars.com/{img_url_rel}'
 
     return img_url
 
@@ -87,7 +86,7 @@ def mars_facts():
     # Add try/except for error handling
     try:
         # Use 'read_html' to scrape the facts table into a dataframe
-        df = pd.read_html('https://data-class-mars-facts.s3.amazonaws.com/Mars_Facts/index.html')[0]
+        df = pd.read_html('https://galaxyfacts-mars.com/')[0]
 
     except BaseException:
         return None
@@ -102,47 +101,42 @@ def mars_facts():
 def hemisphere(browser):
     #visit URL
     url = 'https://marshemispheres.com/'
-    browser.visit(url)
+    browser.visit(url + 'index.html')
 
-    # 2. Create a list to hold the images and titles.
+ 
     hemisphere_image_urls = []
-
-    # 3. Write code to retrieve the image urls and titles for each hemisphere.
-    html = browser.html
-    img_soup = soup(html, 'html.parser')
-
-    #store the base url
-    base_url = "https://marshemispheres.com/"
-
-    #retreive all items
-    items = img_soup.find_all('div', class_='item')
-
-    # item ontains mars hemispheres info
-    for i in items:
-        
-        hemispheres  = {}
-
-        #store title
-        title = i.find("h3").text
-        
-        #full image website
-        full_image_site = i.find('a', class_='itemLink product-item')['href']
-        
-        #Visit the link that contains the full image website 
-        browser.visit(base_url + full_image_site)
-        img_html = browser.html
-        img_soup = soup(img_html, 'html.parser')
-        
-        # Retrieve image  
-        partial_img_url = img_soup.find('div', class_='downloads')
-        hemispheres['img_url'] = base_url + partial_img_url.find('a')['href']
-        hemispheres['title'] = title
+    for i in range(4):
+        browser.find_by_css("a.product-item img")[i].click()
+        hemispheres = scrape_hemisphere(browser.html)
+        hemispheres['img_url'] = url + hemispheres['img_url']
         hemisphere_image_urls.append(hemispheres)
-        
-        browser.back()  
 
-    return hemisphere_image_urls
-    
+        browser.back()
+
+        return hemispheres
+
+def scrape_hemisphere(html_text):
+
+    html = html_text.html
+    hemi_soup = soup(html, 'html.parser')
+
+    try:
+        title_elem = hemi_soup.find("h2", class_="title").get_text()
+        sample_elem = hemi_soup.find("a", text="Sample").get("href")
+
+    except AttributeError:
+
+            title_elem = None
+            sample_elem = None
+
+    hemispheres = {
+            "title": title_elem,
+            "img_url": sample_elem
+        }
+
+    return hemispheres
+
+
 if __name__ == "__main__":
 
     # If running as script, print scraped data
