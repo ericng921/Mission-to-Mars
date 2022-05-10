@@ -20,12 +20,13 @@ In the challenge we added all four of the hemisphere images in our Mars site by 
 
 As picture above shown it displays 4 full-resolution Mars hemisphere image URL and title.
 
+--------------------------------------
 
 ![dbmongo](https://user-images.githubusercontent.com/100378319/167528093-00d08fd5-1f11-4cd5-acd1-86ec2f3f1d33.png)
 
 As picture above shown Mongo database is updated to contain image URL and title for each hemisphere.
 
-
+--------------------------------------
 
 ![mobile_grid](https://user-images.githubusercontent.com/100378319/167528083-18e692b7-f282-49e4-bc37-ae8b1c1ea79a.png)
 
